@@ -1,41 +1,747 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Website</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f9;
-            padding: 50px;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unconditional — a manifesto in motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#1c1de8;
+    --cobalt-deep:#11128f;
+    --ink:#0a0a12;
+    --bone:#f2efe6;
+    --grey:#9a9aa4;
+    --white:#ffffff;
+    --accent:#d9d9ff;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--cobalt);
+    color:var(--ink);
+    font-family:'Space Mono',monospace;
+    overflow-x:hidden;
+  }
+
+  /* ---------- fixed background layers -> never move on scroll ---------- */
+
+  .bg-parallax{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    background:var(--cobalt);
+  }
+
+  .bg-parallax img{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:auto;
+    display:block;
+    will-change:transform;
+  }
+
+  #bg-overlay{
+    opacity:0.55;
+  }
+
+  .halftone{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:0.5;
+    background-image:radial-gradient(var(--white) 1px, transparent 1.2px);
+    background-size:14px 14px;
+    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 18%, rgba(0,0,0,0.05) 82%, rgba(0,0,0,0.35) 100%);
+    mask-image:linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 18%, rgba(0,0,0,0.05) 82%, rgba(0,0,0,0.35) 100%);
+  }
+
+  .grid-lines{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:0.35;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+
+  /* ---------- floating pinned assets -> fixed position wi/ gentle bob only ---------- */
+
+  .float-layer{
+    position:fixed;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+  }
+
+  .float-item{
+    position:absolute;
+  }
+
+  .spark-wrap{
+    top:14%;
+    left:16%;
+    width:min(6vw, 46px);
+    animation:bob-c 5.5s ease-in-out infinite;
+  }
+
+  .dove{
+    position:absolute;
+    animation:bob-c 6s ease-in-out infinite;
+  }
+
+  .dove img{display:block; width:100%; height:auto;}
+
+  .dove.d1{top:22%;right:22%;width:44px;animation-duration:6.5s;}
+  .dove.d2{top:34%;right:14%;width:30px;animation-duration:5.2s;animation-delay:-1.5s;}
+  .dove.d3{top:46%;right:28%;width:36px;animation-duration:7.2s;animation-delay:-3s;}
+  .dove.d4{bottom:30%;left:10%;width:32px;animation-duration:6s;animation-delay:-2s;}
+  .dove.d5{top:60%;right:6%;width:26px;animation-duration:5.8s;animation-delay:-.8s;}
+
+  @keyframes bob-a{
+    0%,100%{transform:translateY(0) rotate(var(--tilt, 0deg));}
+    50%{transform:translateY(-16px) rotate(calc(var(--tilt, 0deg) + -2deg));}
+  }
+  @keyframes bob-b{
+    0%,100%{transform:translateY(0) rotate(var(--tilt, 0deg));}
+    50%{transform:translateY(-22px) rotate(calc(var(--tilt, 0deg) + 1.5deg));}
+  }
+  @keyframes bob-c{
+    0%,100%{transform:translate(0,0) rotate(0deg);}
+    50%{transform:translate(6px,-14px) rotate(4deg);}
+  }
+  @keyframes bob-b-mirror{
+    0%,100%{transform:scaleX(-1) translateY(0) rotate(var(--tilt, 0deg));}
+    50%{transform:scaleX(-1) translateY(-22px) rotate(calc(var(--tilt, 0deg) + -1.5deg));}
+  }
+
+  @keyframes bob-logo{
+    0%,100%{transform:translate(-50%,0) rotate(0deg);}
+    50%{transform:translate(-50%,-22px) rotate(-1.2deg);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .spark-wrap,.dove,.scene-asset,.hero-logo,.event-photo{animation:none;}
+  }
+
+  /* ---------- assets pinned inside individual sections (scroll with page, only bob in place) ---------- */
+
+  .scene-asset{
+    position:absolute;
+    pointer-events:none;
+    z-index:1;
+  }
+
+  .scene-sphere{width:min(16vw, 170px);}
+  .scene-hand{width:min(20vw, 220px);}
+
+  .scene-asset img{
+    width:100%;
+    height:auto;
+    display:block;
+  }
+
+  .hero-sphere{top:10%;right:8%;animation:bob-a 7.5s ease-in-out infinite;}
+  .sec1-hand{bottom:6%;right:6%;animation:bob-b 8s ease-in-out infinite;}
+  .sec2-sphere{top:8%;left:6%;animation:bob-a 6.5s ease-in-out infinite;animation-delay:-2s;}
+  .sec4-hand{top:6%;right:8%;animation:bob-b-mirror 9s ease-in-out infinite;animation-delay:-3s;}
+  .closer-sphere{bottom:8%;right:10%;width:min(11vw, 120px);animation:bob-a 7s ease-in-out infinite;animation-delay:-1s;}
+
+  /* ---------- scrolling content ---------- */
+
+  main{
+    position:relative;
+    z-index:10;
+  }
+
+  section{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:6vh 8vw;
+    overflow:hidden;
+  }
+
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--bone);
+    opacity:0.85;
+    margin-bottom:1.4rem;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .eyebrow::before{
+    content:"";
+    width:7px;height:7px;
+    background:var(--bone);
+    border-radius:50%;
+    display:inline-block;
+  }
+
+  .hero{
+    justify-content:center;
+    text-align:center;
+  }
+
+  .hero-inner{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .hero-logo-wrap{
+    position:relative;
+    width:min(80vw, 900px);
+    margin-bottom:1.2rem;
+  }
+
+  .hero-logo{
+    display:block;
+    width:100%;
+    height:auto;
+    filter:drop-shadow(0 24px 40px rgba(0,0,0,0.28));
+    animation:bob-logo 6.5s ease-in-out infinite;
+    transform:translate(-50%,0);
+    position:relative;
+    left:50%;
+  }
+
+  .scroll-cue{
+    position:absolute;
+    bottom:6vh;
+    left:8vw;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--bone);
+    opacity:0.6;
+  }
+
+  /* ---------- da section headings ---------- */
+
+  .heading-badge{
+    display:inline-block;
+    background:var(--white);
+    border-radius:44px 34px 48px 30px / 30px 46px 28px 50px;
+    padding:0.5em 1em;
+    box-shadow:0 0 0 4px var(--white), 0 6px 0 0 rgba(10,10,18,0.08), 0 40px 80px rgba(0,0,0,0.45), 0 16px 34px rgba(0,0,0,0.3);
+  }
+
+  .section-heading{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    line-height:0.95;
+    font-size:clamp(2.6rem, 7vw, 5rem);
+    color:var(--cobalt);
+    letter-spacing:-0.01em;
+  }
+
+  .section-head-block{
+    margin-top:6vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  /* ---------- who-are-we part ---------- */
+
+  .who-section{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:1.8rem;
+  }
+
+  .panel{
+    position:relative;
+    z-index:5;
+    background:var(--bone);
+    border:1px solid var(--ink);
+    max-width:700px;
+    padding:3.2rem 3rem;
+  }
+
+  .panel.wide{
+    max-width:600px;
+    text-align:left;
+  }
+
+  .panel .tag{
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--cobalt);
+    margin-bottom:1rem;
+    display:block;
+  }
+
+  .panel p{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    text-transform:none;
+    font-size:clamp(1.5rem, 3.4vw, 2.4rem);
+    line-height:1.18;
+    letter-spacing:-0.01em;
+  }
+
+  .panel p em{
+    font-style:normal;
+    color:var(--cobalt);
+  }
+
+  .panel .intro{
+    font-family:'Space Mono',monospace;
+    font-size:14px;
+    line-height:1.7;
+    opacity:0.85;
+  }
+
+  .panel .goal-line{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:clamp(1.2rem, 2.4vw, 1.6rem);
+    margin-top:1.6rem;
+    letter-spacing:-0.01em;
+  }
+
+  .panel .goal-line em{
+    font-style:normal;
+    color:var(--cobalt);
+  }
+
+  .panel ul.goal-list{
+    margin-top:1rem;
+    padding-left:1.1rem;
+    display:flex;
+    flex-direction:column;
+    gap:0.55rem;
+  }
+
+  .panel ul.goal-list li{
+    font-family:'Space Mono',monospace;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+
+  .panel .est{
+    display:inline-block;
+    margin-top:1.8rem;
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--cobalt);
+  }
+
+  /* ---------- opportunity grid ---------- */
+
+  .opportunity-section{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:2rem;
+  }
+
+  .opportunity-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(240px, 1fr));
+    gap:1.6rem;
+    max-width:900px;
+    width:100%;
+  }
+
+  .opp-card{
+    background:var(--bone);
+    border:1px solid var(--ink);
+    padding:2.4rem 2.2rem;
+    text-align:left;
+  }
+
+  .opp-card h3{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    font-size:1.6rem;
+    letter-spacing:-0.01em;
+    margin-bottom:0.7rem;
+  }
+
+  .opp-card p{
+    font-family:'Space Mono',monospace;
+    font-size:15px;
+    line-height:1.6;
+    opacity:0.85;
+  }
+
+  .opp-card p strong{
+    color:var(--cobalt);
+    font-weight:700;
+  }
+
+  /* ---------- media / events section ---------- */
+
+  .media-section{
+    min-height:auto;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:0.6rem;
+    padding:12vh 8vw 10vh;
+  }
+
+  .media-sub{
+    margin-top:1rem;
+    color:var(--bone);
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    opacity:0.8;
+    letter-spacing:0.03em;
+  }
+
+  .align-left{justify-content:flex-start;}
+  .align-right{justify-content:flex-end;}
+  .align-center{justify-content:center;}
+
+  .panel.small{max-width:640px;padding:3.2rem 3rem;}
+  .panel.small p{font-size:clamp(2.1rem, 4.2vw, 2.8rem);line-height:1.2;}
+  .panel.small .tag{font-size:13px;margin-bottom:1.3rem;}
+
+  .closer{
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+  }
+
+  .closer h2{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    color:var(--bone);
+    font-size:clamp(2.2rem, 6vw, 4.5rem);
+    line-height:0.95;
+    max-width:16ch;
+  }
+
+  .closer .foot{
+    margin-top:2.4rem;
+    display:flex;
+    gap:2rem;
+    color:var(--bone);
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    opacity:0.75;
+  }
+
+
+  /* ---------- floating photo beside each media/event box ---------- */
+
+  .event-photo{
+    position:absolute;
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 24px 48px rgba(0,0,0,0.35);
+    z-index:1;
+  }
+
+  .event-photo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .ep-right{right:7%;width:clamp(220px, 26vw, 620px);height:clamp(260px, 32vw, 740px);}
+  .ep-left{left:7%;width:clamp(220px, 26vw, 620px);height:clamp(260px, 32vw, 740px);}
+
+  /* each photo gets its own static lean via --tilt, layered under the
+     existing bob-a/bob-b animation so they don't all tilt identically */
+  .ep-1{top:14%;--tilt:-7deg;animation:bob-a 7.2s ease-in-out infinite;}
+  .ep-2{top:16%;--tilt:6deg;animation:bob-b 7.8s ease-in-out infinite;animation-delay:-1.2s;}
+  .ep-3{top:12%;--tilt:9deg;animation:bob-a 6.6s ease-in-out infinite;animation-delay:-2.4s;}
+  .ep-4{top:18%;--tilt:-5deg;animation:bob-b 8.2s ease-in-out infinite;animation-delay:-0.6s;}
+  .ep-5{top:13%;--tilt:7deg;animation:bob-a 7.4s ease-in-out infinite;animation-delay:-1.8s;}
+  .ep-6{top:15%;--tilt:-9deg;animation:bob-b 6.9s ease-in-out infinite;animation-delay:-3s;}
+  .ep-7{top:17%;--tilt:5deg;animation:bob-a 7.6s ease-in-out infinite;animation-delay:-0.9s;}
+  .ep-8{top:12%;--tilt:-6deg;animation:bob-b 7.1s ease-in-out infinite;animation-delay:-2.1s;}
+  .ep-9{top:16%;--tilt:8deg;animation:bob-a 6.8s ease-in-out infinite;animation-delay:-1.5s;}
+
+  @media (max-width:640px){
+    section{padding:6vh 6vw;}
+
+    /* --- flexbox fix: stack image above panel, centered, no overlap --- */
+    .media-section ~ section{
+      flex-direction:column;
+      justify-content:center !important;
+      align-items:center;
+      overflow:visible;
+      gap:0.5rem;
+      padding-top:8vh;
+      padding-bottom:8vh;
+    }
+
+    .panel{max-width:100%;}
+    .panel.small{width:100%;max-width:360px;padding:2.2rem 1.8rem;}
+    .panel.small p{font-size:clamp(1.6rem, 6vw, 2rem);}
+
+    .spark-wrap, .dove, .scene-asset{opacity:0.6;}
+
+    .event-photo{
+      position:relative;
+      left:auto;right:auto;top:auto;
+      width:70vw;height:60vw;max-width:320px;max-height:280px;
+      margin:0 auto;
+      /* keep the tilt on mobile too, just dialed back so it doesn't clip */
+      --tilt: calc(var(--tilt, 0deg) * 0.6);
+    }
+
+    .scene-hand{width:min(30vw, 160px);}
+    .scene-sphere{width:min(24vw, 120px);}
+    .hero-logo-wrap{width:min(92vw, 900px);}
+    .opportunity-grid{grid-template-columns:1fr;max-width:420px;}
+    .media-grid{grid-template-columns:1fr;max-width:420px;}
+  }
+</style>
 </head>
 <body>
 
-    <h1>Hello, World!</h1>
-    <p>Welcome to my website created on GitHub.</p>
-    <button onclick="alert('Thanks for clicking!')">Click Me</button>
+<div class="bg-parallax" id="bg-parallax">
+  <img id="bg-image" src="assets/background.jpg" alt="">
+  <img id="bg-overlay" src="assets/overlay.png" alt="">
+</div>
+<div class="grid-lines"></div>
+<div class="halftone"></div>
 
+<main>
+
+  <section class="hero">
+    <div class="scene-asset scene-sphere hero-sphere">
+      <img src="assets/sphere.png" alt="">
+    </div>
+    <div class="hero-inner">
+      <div class="hero-logo-wrap">
+        <img class="hero-logo" src="assets/tritonxr-logo.png" alt="TritonXR">
+      </div>
+    </div>
+    <span class="scroll-cue">Scroll ↓</span>
+  </section>
+
+  <section class="who-section">
+    <div class="section-head-block">
+      <span class="heading-badge"><h2 class="section-heading">What is Triton XR?</h2></span>
+    </div>
+    <div class="panel wide">
+      <p class="intro">A multidisciplinary community for students interested in XR.</p>
+      <p class="goal-line">Our <em>GOAL</em> is to:</p>
+      <ul class="goal-list">
+        <li>Build community &amp; connections</li>
+        <li>Grow technical &amp; social skills for XR</li>
+        <li>Spark innovative thinking</li>
+      </ul>
+      <span class="est">EST. 2015</span>
+    </div>
+  </section>
+
+  <section class="opportunity-section">
+    <div class="section-head-block">
+      <span class="heading-badge"><h2 class="section-heading">The Opportunity</h2></span>
+    </div>
+    <div class="opportunity-grid">
+      <div class="opp-card">
+        <h3>Skill Building</h3>
+        <p>From <strong>theory</strong> to hands-on <strong>application</strong>.</p>
+      </div>
+      <div class="opp-card">
+        <h3>Exposure</h3>
+        <p>Hands-on <strong>experience</strong> with industry-standard tools.</p>
+      </div>
+      <div class="opp-card">
+        <h3>Growth</h3>
+        <p><strong>High-impact</strong> projects, real stakes.</p>
+      </div>
+      <div class="opp-card">
+        <h3>Immersion</h3>
+        <p>Immerse yourself in <strong>up-and-coming technology</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="media-section">
+    <div class="section-head-block">
+      <span class="heading-badge"><h2 class="section-heading">Past Events</h2></span>
+    </div>
+  </section>
+
+  <section class="align-left">
+    <div class="event-photo ep-right ep-1">
+      <img src="assets/event1.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">UCSD's largest hackathon</span>
+      <p>HackXR — <em>a two-day immersive sprint</em> where the brightest minds at UCSD build the future of spatial computing.</p>
+    </div>
+  </section>
+
+  <section class="align-right">
+    <div class="event-photo ep-left ep-2">
+      <img src="assets/event2.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Game night</span>
+      <p>Free boba, free headsets. <em>Come play</em> in our VR space — first 15 get a drink on us.</p>
+    </div>
+  </section>
+
+  <section class="align-right">
+    <div class="event-photo ep-left ep-8">
+      <img src="assets/event8.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Q&amp;A — Obsidian Entertainment</span>
+      <p>Meet the studio behind Fallout: New Vegas and Avowed. <em>Ask us anything.</em></p>
+    </div>
+  </section>
+
+  <section class="align-left">
+    <div class="event-photo ep-right ep-4">
+      <img src="assets/event4.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Workshop — Unity Basics</span>
+      <p>No experience required. <em>Bring a laptop</em> and learn to build in Unity from scratch.</p>
+    </div>
+  </section>
+
+  <section class="align-right">
+    <div class="event-photo ep-left ep-5">
+      <img src="assets/event5.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Workshop — 3D Avatar Creation</span>
+      <p>Build a character, then <em>bring it to life</em> in VRoid Studio. No prior experience needed.</p>
+    </div>
+  </section>
+
+  <section class="align-center">
+    <div class="event-photo ep-left ep-6">
+      <img src="assets/event6.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Game night — Among Us VR</span>
+      <p>Trust no one. <em>Survive together</em> — or don't — in fully immersive VR.</p>
+    </div>
+  </section>
+
+  <section class="align-left">
+    <div class="event-photo ep-right ep-7">
+      <img src="assets/event7.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Showcase — TGEX</span>
+      <p>Beat Saber, Superhot, and <em>a year's worth</em> of hackathon builds, all in one afternoon.</p>
+    </div>
+  </section>
+
+  <section class="align-left">
+    <div class="event-photo ep-right ep-9">
+      <img src="assets/event9.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">Game night — Tilt Brush VR</span>
+      <p>Paint the room. <em>Literally.</em> Grab a headset and create something with friends.</p>
+    </div>
+  </section>
+
+  <section class="align-right">
+    <div class="event-photo ep-left ep-3">
+      <img src="assets/event3.png" alt="">
+    </div>
+    <div class="panel small">
+      <span class="tag">GBM — Beat Saber + Superhot</span>
+      <p>Boba and beat drops. <em>Detress with us</em> at our first VR game night of the quarter.</p>
+    </div>
+  </section>
+
+  <section class="closer">
+    <div class="scene-asset scene-sphere closer-sphere">
+      <img src="assets/sphere.png" alt="">
+    </div>
+    <h2>WELCOME<br>to<br>TRITONXR</h2>
+    <div class="foot">
+      <span>2026</span>
+      <span>Akshetha Vishnu</span>
+      <span>All rights reserved</span>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  var img = document.getElementById('bg-image');
+  var overlay = document.getElementById('bg-overlay');
+  var SPEED = 0.8;
+  var OVERLAY_SPEED = 0.4;
+  var imgExtra = 0;
+  var overlayExtra = 0;
+  var maxScroll = 1;
+  var ticking = false;
+
+  function measure(){
+    var vh = window.innerHeight;
+    var imgH = img.getBoundingClientRect().height;
+    var overlayH = overlay.getBoundingClientRect().height;
+    imgExtra = Math.max(0, imgH - vh);
+    overlayExtra = Math.max(0, overlayH - vh);
+    maxScroll = Math.max(1, document.documentElement.scrollHeight - vh);
+  }
+
+  function update(){
+    var scrollY = window.scrollY || window.pageYOffset;
+    var progress = Math.min(1, scrollY / maxScroll);
+    var translateImg = -progress * imgExtra * SPEED;
+    var translateOverlay = -progress * overlayExtra * OVERLAY_SPEED;
+    img.style.transform = 'translate3d(0,' + translateImg + 'px,0)';
+    overlay.style.transform = 'translate3d(0,' + translateOverlay + 'px,0)';
+    ticking = false;
+  }
+
+  function onScroll(){
+    if(!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', function(){ measure(); update(); });
+  window.addEventListener('load', function(){ measure(); update(); });
+  if(img.complete){ measure(); update(); } else { img.addEventListener('load', function(){ measure(); update(); }); }
+  if(overlay.complete){ measure(); update(); } else { overlay.addEventListener('load', function(){ measure(); update(); }); }
+})();
+</script>
 </body>
 </html>
