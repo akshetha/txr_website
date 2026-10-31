@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TritonXR · Enter XR</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#000}html{scroll-behavior:auto}body{font-family:system-ui,sans-serif}
+#intro{height:340vh;position:relative;z-index:2;pointer-events:none}
+#stage{position:fixed;inset:0;height:100vh;overflow:hidden;background:#000}
+canvas{position:relative;z-index:1;display:block;width:100%;height:100%}
+#aura{position:absolute;inset:-15%;pointer-events:none;background:radial-gradient(ellipse at 45% 46%,#483a7840 0%,#25124830 20%,transparent 48%),radial-gradient(ellipse at 65% 55%,#5b133023,transparent 42%),radial-gradient(ellipse at 28% 68%,#14245925,transparent 40%),#010106;filter:blur(28px);will-change:transform}
+#stage::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 25%,#0008 80%,#000d 100%)}
+#flash{z-index:3;position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#skip{position:fixed;right:24px;top:24px;z-index:5;color:#ddd;background:#1119;border:1px solid #555;border-radius:24px;padding:10px 18px;font:13px system-ui;cursor:pointer}
+#site{position:fixed;inset:0;z-index:1;background:#1c1de8;visibility:hidden;pointer-events:none}
+#site iframe{display:block;width:100%;height:100vh;border:0}
+#loading{position:absolute;left:0;right:0;bottom:32px;text-align:center;color:#777;font:12px system-ui;letter-spacing:.12em}
+body.revealed{overflow:hidden}body.revealed #intro{visibility:hidden}body.revealed #site{visibility:visible!important;pointer-events:auto}body.revealed #skip{display:none}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<button id="skip">Skip intro</button>
+<section id="intro" aria-label="Scroll to enter TritonXR"><div id="stage"><div id="flash"></div><span id="loading">Loading headset…</span></div></section>
+<main id="site"><iframe src="./index.html" title="TritonXR website" loading="eager"></iframe></main>
+<script>
+// Each refresh starts at the beginning of the intro.
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+scrollTo(0,0);
+const intro=document.getElementById('intro');
+const site=document.getElementById('site');
+let enteringSite=false;
+function skipIntro(){
+ if(enteringSite)return;
+ enteringSite=true;
+ site.style.visibility='visible';
+ document.body.classList.add('revealed');
+ // The iframe is only a visual preview; the interactive site owns the top-level window.
+ location.replace('./index.html');
+}
+document.getElementById('skip').onclick=skipIntro;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)skipIntro();
+</script>
+<script type="module" src="./headset-intro.js?v=12"></script>
+</body>
+</html>

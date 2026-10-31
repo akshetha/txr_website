@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quest 3 model preview</title>
+<style>body{margin:0;background:#111216;color:#eee;font:14px system-ui}canvas{display:block}nav{position:fixed;top:20px;left:20px;display:flex;gap:8px;z-index:1}button,a{font:inherit;color:#eee;background:#25262d;border:1px solid #555;border-radius:6px;padding:9px 14px;text-decoration:none;cursor:pointer}#error{position:fixed;bottom:20px;left:20px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head>
+<body><nav><button id="front">Front</button><button id="inside">Inside</button><a href="./assets/models/quest-3.glb" download>Download GLB</a></nav><p id="error"></p>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.5;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#111216');
+const pmrem=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();scene.environment=pmrem.fromScene(room).texture;room.dispose();pmrem.dispose();
+const camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.001,10);camera.position.set(.24,.14,.36);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,.005,-.055);controls.enableDamping=true;controls.minDistance=.09;controls.maxDistance=1;
+const key=new THREE.DirectionalLight(0xffffff,2);key.position.set(1,2,3);scene.add(key);scene.add(new THREE.HemisphereLight(0xffffff,0x343746,1));
+new GLTFLoader().load('./assets/models/quest-3.glb?v=5',gltf=>scene.add(gltf.scene),undefined,error=>{document.getElementById('error').textContent='Could not load model: '+error.message;});
+document.getElementById('front').onclick=()=>camera.position.set(0,.025,.43);
+document.getElementById('inside').onclick=()=>camera.position.set(.03,.07,-.43);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+</script></body></html>
