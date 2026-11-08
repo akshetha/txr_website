@@ -1,22 +1,35 @@
 import * as THREE from 'three';
-import { createElectricArcs } from './electric-arcs.js';
+import {createSmoothScroll} from './smooth-scroll.js?v=2';
+// Sparks temporarily disabled.
+// import { createElectricArcs } from './electric-arcs.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const stage=document.getElementById('stage'), flash=document.getElementById('flash');
 const site=document.getElementById('site'), loading=document.getElementById('loading');
+const smoothScroll=createSmoothScroll(()=>!document.body.classList.contains('revealed'));
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let renderer, model, raf, electricity, finished=false;
+let autoRequested=false,autoStarted=false;
+// Queue early clicks until the model is ready so the full animation remains visible.
+addEventListener('click',event=>{
+ if(finished || event.target.closest?.('#skip'))return;
+ autoRequested=true;
+});
 const straps=[];
+const welcome=document.getElementById('welcome');
+const welcomeText=document.getElementById('welcome-text');
+const welcomeCaret=document.getElementById('welcome-caret');
 const clamp=(v)=>Math.max(0,Math.min(1,v));
 const smooth=(a,b,t)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x);};
 function finish(){
  if(finished)return;finished=true;cancelAnimationFrame(raf);
  site.style.visibility='visible';
  document.body.classList.add('revealed');
+ smoothScroll.destroy();
  electricity?.dispose();
  renderer?.dispose();
  window.skipIntro();
 }
-document.getElementById('skip').addEventListener('click',finish);
+
 reduceMotion.addEventListener('change',event=>{if(event.matches)finish();});
 try {
  if(reduceMotion.matches || document.body.classList.contains('revealed'))finish();
@@ -26,7 +39,7 @@ try {
   renderer.setSize(innerWidth,innerHeight);
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.82;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;
   stage.prepend(renderer.domElement);
   const aura=document.createElement('div');aura.id='aura';stage.prepend(aura);
   const scene=new THREE.Scene();
@@ -60,7 +73,7 @@ try {
    light.shadow.radius=3;
   }
   const pivot=new THREE.Group();scene.add(pivot);
-  electricity=createElectricArcs(pivot);
+  // electricity=createElectricArcs(pivot);
   const center=new THREE.Vector3(0,0,-.055);
   new GLTFLoader().load('./assets/models/quest-3.glb?v=5',gltf=>{
    if(finished)return;
@@ -94,7 +107,7 @@ try {
     let left=Infinity,right=-Infinity,top=-Infinity,bottom=Infinity;
     model.traverse(object=>{
      if(!object.isMesh || !object.visible)return;
-     object.geometry.computeBoundingBox();const box=object.geometry.boundingBox;
+     if(!object.geometry.boundingBox)object.geometry.computeBoundingBox();const box=object.geometry.boundingBox;
      for(let corner=0;corner<8;corner++){
       boundsCorner.set(corner&1?box.max.x:box.min.x,corner&2?box.max.y:box.min.y,corner&4?box.max.z:box.min.z);
       boundsCorner.applyMatrix4(object.matrixWorld).project(camera);
@@ -112,15 +125,43 @@ try {
   let progress=0,last=performance.now();
   function render(now){
    if(finished)return;
+   if(document.hidden){last=now;raf=requestAnimationFrame(render);return;}
    if(document.body.classList.contains('revealed')){finish();return;}
+   if(autoRequested && model && !autoStarted){
+    autoStarted=true;
+    const end=document.getElementById('intro').offsetHeight-innerHeight;
+    const remaining=1-clamp(scrollY/end);
+    smoothScroll.scrollTo(end,{
+     duration:Math.max(.65,1.9*remaining),
+     easing:t=>t*t*(3-2*t),
+     lock:true,
+     force:true,
+    });
+   }
+   smoothScroll.raf(now);
    const raw=clamp(scrollY/(document.getElementById('intro').offsetHeight-innerHeight));
    const dt=Math.min(50,now-last);last=now;
-   if(model)progress+=(raw-progress)*(1-Math.exp(-dt/65));
+   // Lenis already eases the scroll; keep the headset directly synchronized.
+   if(model)progress=raw;
+   let welcomeCopy='',welcomeOpacity=0;
+   if(progress>=.035 && progress<.13){
+    // Scroll through uneven fades before the terminal-style typing begins.
+    const glitch=(progress-.035)/.095;
+    welcomeCopy='W';
+    welcomeOpacity=Math.max(0,Math.sin(glitch*Math.PI*7))*(.4+.6*glitch);
+   } else if(progress>=.13){
+    const letters=Math.min(7,1+Math.floor(clamp((progress-.13)/.39)*7));
+    welcomeCopy='Welcome'.slice(0,letters);
+    welcomeOpacity=1-smooth(.70,.82,progress);
+   }
+   if(welcomeText.textContent!==welcomeCopy)welcomeText.textContent=welcomeCopy;
+   welcomeCaret.hidden=progress<.13;
+   welcome.style.opacity=String(welcomeOpacity);
    const seconds=now/1000;
    const phase=seconds*.12+progress*1.7;
    // Preserve the ominous opening, then build illumination toward the reveal.
    const illumination=smooth(.08,.84,progress);
-   renderer.toneMappingExposure=.82+illumination*.58;
+   renderer.toneMappingExposure=.96+illumination*.44;
    edge.intensity=2.6+illumination*1.6;
    pink.intensity=.8+illumination*1.1;
    scene.environmentIntensity=1+illumination*.45;
@@ -146,19 +187,27 @@ try {
    camera.position.y=THREE.MathUtils.lerp(.025,0,approach);
    camera.lookAt(0,0,0);
    centerSilhouette(1-smooth(.48,.72,progress));
+   // Prepare the destination late, and only animate it when the reveal needs it.
+   const preview=site.querySelector('iframe');
+   if(progress>.72 && !preview.hasAttribute('src'))preview.src=preview.dataset.src;
+   const previewActive=progress>.90;
+   if(preview.dataset.active!==String(previewActive)){
+    preview.dataset.active=String(previewActive);
+    preview.contentWindow?.postMessage({type:'intro-preview',active:previewActive},location.origin);
+   }
    const bloom=smooth(.83,.93,progress);
    const reveal=smooth(.94,1,progress);
    flash.style.opacity=String(bloom*(1-reveal));
    site.style.visibility=progress>.92?'visible':'hidden';
    renderer.domElement.style.opacity=String(1-smooth(.91,.95,progress));
    stage.style.background=progress>.93?'transparent':'#000';
-   electricity.update(progress,now,dt);
+   // electricity.update(progress,now,dt);
    renderer.render(scene,camera);
    if(progress>.997 && raw>.998){finish();return;}
    raf=requestAnimationFrame(render);
   }
   raf=requestAnimationFrame(render);
   addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-  addEventListener('pagehide',()=>{finished=true;cancelAnimationFrame(raf);electricity?.dispose();renderer?.dispose();},{once:true});
+  addEventListener('pagehide',()=>{smoothScroll.destroy();finished=true;cancelAnimationFrame(raf);electricity?.dispose();renderer?.dispose();},{once:true});
  }
 } catch(error){console.error('Headset intro:',error);finish();}

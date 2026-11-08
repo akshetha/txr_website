@@ -1,0 +1,103 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TritonXR · Spatial</title><link rel="preload" href="./assets/fonts/metal-mania/MetalMania-Regular.ttf" as="font" type="font/ttf" crossorigin><link rel="stylesheet" href="./assets/vendor/lenis/lenis.css"><style>
+@font-face{font-family:Redaction;src:url('./assets/fonts/redaction-70/Redaction70-Regular.ttf')}*{box-sizing:border-box}body{margin:0;background:#030308;color:#eeebff;font:15px system-ui;overflow:hidden}canvas{position:fixed;inset:0}header{position:fixed;inset:0 4vw auto;display:flex;align-items:center;justify-content:space-between;min-height:86px;z-index:2;border-bottom:1px solid #ffffff20;gap:20px}header>a{font-weight:800;letter-spacing:-.06em;font-size:23px;color:white;text-decoration:none}nav{display:flex;gap:8px;flex-wrap:wrap}button{font:12px system-ui;color:#a9a4bd;border:1px solid transparent;padding:9px 13px;background:none;cursor:pointer;border-radius:30px}button:hover,button[aria-current=page]{background:#a68aff18;border-color:#aa8fff60;color:white}#copy{position:fixed;left:6vw;top:24%;width:38vw;z-index:1;pointer-events:none}.label{font:11px ui-monospace,monospace;letter-spacing:.15em;color:#ac98db;text-transform:uppercase}h1{font:clamp(52px,7vw,112px)/.97 Redaction,serif;letter-spacing:-.04em;margin:22px 0}#description{color:#a5a0b7;max-width:350px;line-height:1.8}#details{position:fixed;left:6vw;bottom:10vh;right:6vw;z-index:1;display:flex;gap:12px;pointer-events:none}#details span{font:11px ui-monospace,monospace;letter-spacing:.05em;padding:12px 18px;border:1px solid #ffffff24;background:#070613a0;border-radius:4px;color:#b6accd}footer{position:fixed;bottom:22px;left:4vw;right:4vw;display:flex;justify-content:space-between;color:#6f6785;font:10px ui-monospace,monospace;letter-spacing:.1em;z-index:1}#loading{position:fixed;inset:45% 0 auto;text-align:center;z-index:4;color:#9c89c8}#loading:empty{display:none}@media(max-width:700px){header{align-items:start;padding-top:20px;flex-direction:column;gap:10px;padding-bottom:12px}nav{gap:0}button{padding:8px 10px;font-size:11px}#copy{top:20%;width:85vw}h1{font-size:58px;max-width:340px}#description{max-width:290px;font-size:13px}#details{bottom:8vh;flex-wrap:wrap}#details span{padding:8px 10px}footer span:last-child{display:none}}
+
+#sphere-controls{display:none;position:fixed;bottom:9vh;left:50%;transform:translateX(-50%);z-index:3;align-items:center;gap:12px;padding:6px 12px;background:#090615cc;border:1px solid #ffffff25;border-radius:30px;white-space:nowrap}
+body[data-view=events] #sphere-controls{display:flex}body[data-view=events] #details{display:none}
+#sphere-controls button{border-color:#ffffff30;color:#e3d6ff}#sphere-controls select{font:12px system-ui;background:#100c20;color:#d2c5eb;border:0;padding:8px;border-radius:6px}
+#poster-dialog{padding:20px;background:#0a0812;border:1px solid #8870b780;color:#ddd;max-width:94vw;max-height:94vh;border-radius:10px}#poster-dialog::backdrop{background:#020107e8;backdrop-filter:blur(12px)}#poster-image{display:block;max-width:85vw;max-height:75vh;object-fit:contain;margin:12px auto}#poster-dialog header{position:static;min-height:0;border:0;padding:0;flex-direction:row}#poster-caption{font:12px monospace;color:#a99aba}#close-poster{border-color:#ffffff30}
+@media(max-width:700px){body[data-view=events] #copy{top:18%;pointer-events:none}body[data-view=events] h1{font-size:38px;margin:12px 0}body[data-view=events] #description{display:none}#sphere-controls{bottom:7vh}}
+
+@font-face{font-family:MetalMania;src:url('./assets/fonts/metal-mania/MetalMania-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+#home{display:none}body[data-view=main]{overflow-y:auto}body[data-view=main]>canvas{opacity:1}body>canvas{transition:opacity .5s}body[data-view=main] #home{display:block}body[data-view=main] #copy,body[data-view=main] #details{display:none}
+body[data-view=main] header{background:linear-gradient(#030308ef,#030308c0);backdrop-filter:blur(12px)}
+#home{position:relative;z-index:1;margin:116px 6vw 100px;pointer-events:none;min-height:calc(100svh - 216px)}
+#home h1{font:clamp(95px,20vw,330px)/.95 MetalMania,serif;letter-spacing:-.045em;margin:16px 0 12px;color:#e5def4;text-shadow:0 0 70px #9e6ad235;width:100%;white-space:nowrap}
+.home-caption{display:flex;justify-content:space-between;gap:24px;border-bottom:1px solid #aa8ecb40;padding:0 0 24px;color:#aaa0bb;font:11px/1.6 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
+.upcoming{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(300px,1.45fr);gap:4vw;margin-top:38px;align-items:center;width:100%;max-width:none}
+.event-placeholder{min-width:0;width:100%;min-height:0;aspect-ratio:1.6;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 70%,#592c7c7a,transparent 65%),linear-gradient(135deg,#100b1ad9,#030308d9);border:1px solid #b69bdb35;backdrop-filter:blur(8px)}
+.event-placeholder::before{content:'';position:absolute;width:170px;height:170px;border:1px solid #a780cb80;border-radius:50%;box-shadow:0 0 50px #8b4bb220,inset 0 0 35px #8b4bb220;transform:rotateX(55deg) rotateZ(-25deg)}
+.event-placeholder::after{content:'';position:absolute;width:210px;height:210px;border:1px solid #a780cb50;border-radius:50%;transform:rotateY(60deg) rotateZ(30deg)}
+.placeholder-mark{font:90px MetalMania,serif;color:#bba7ce;z-index:1;text-shadow:0 0 30px #b16dff66}
+.placeholder-note{position:absolute;bottom:16px;left:20px;font:10px ui-monospace,monospace;letter-spacing:.13em;color:#82748e;text-transform:uppercase}
+.upcoming-copy{min-width:0;background:linear-gradient(90deg,#030308d9,#03030899);padding:12px 0}.upcoming-copy .label{color:#b6a0d4}
+.upcoming-copy h2{font:clamp(32px,3.7vw,58px)/1.1 Redaction,serif;letter-spacing:-.025em;font-weight:400;margin:18px 0}.upcoming-copy p{font-size:14px;line-height:1.8;color:#a69caf;max-width:100%}
+.event-meta{display:flex;gap:26px;margin:24px 0;color:#84768f;font:11px ui-monospace,monospace}.event-meta span{display:flex;flex-direction:column;gap:8px}.event-meta strong{font-weight:400;color:#d1c1df}
+#browse-events,.browse-events{pointer-events:auto;border:0;border-bottom:1px solid #ae8ed36b;border-radius:0;padding:10px 0;color:#dac9ef;font:12px ui-monospace,monospace}#browse-events:hover,.browse-events:hover{background:none;color:#fff}
+@media(max-width:700px){#home{margin:142px 6vw 90px}#home h1{font-size:22vw;margin:24px 0 16px}.home-caption{font-size:9px;gap:20px}.home-caption span:last-child{text-align:right}.upcoming{grid-template-columns:1fr;gap:22px;margin-top:26px}.event-placeholder{min-height:0;aspect-ratio:1.7}.upcoming-copy{padding:8px 0 24px}.upcoming-copy h2{font-size:38px}.upcoming-copy p{max-width:100%}body[data-view=main] footer{background:#030308e8;padding:12px 0;bottom:0}}
+.upcoming+.upcoming{margin-top:64px;padding-top:48px;border-top:1px solid #aa8ecb30}
+.upcoming.reversed{grid-template-columns:minmax(300px,1.45fr) minmax(220px,.85fr)}
+.upcoming.reversed .event-placeholder{grid-column:2;grid-row:1}.upcoming.reversed .upcoming-copy{grid-column:1;grid-row:1}
+@media(max-width:700px){.upcoming.reversed{grid-template-columns:1fr}.upcoming.reversed .event-placeholder,.upcoming.reversed .upcoming-copy{grid-column:auto;grid-row:auto}.upcoming+.upcoming{margin-top:30px;padding-top:30px}}
+@media(max-width:700px){body[data-view=officers] #copy{top:18%}body[data-view=officers] h1{font-size:36px;margin:12px 0}body[data-view=officers] #description{display:none}}
+
+#officers-grid{display:none}
+body[data-view=officers]{overflow-y:auto}
+body[data-view=officers] header{background:#030308e8;backdrop-filter:blur(12px)}
+body[data-view=officers] #copy{width:29vw;top:24%}
+body[data-view=officers] #copy h1{font-size:clamp(44px,5.5vw,88px)}
+body[data-view=officers] #details{display:none}
+body[data-view=officers] #officers-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 18px;margin:150px 5vw 100px 39vw;pointer-events:none}
+.officer-card{min-width:0;text-align:center;border:0;background:none}
+.planet-viewport{width:100%;height:clamp(160px,15vw,250px)}
+.officer-card h2{font:18px/1.3 system-ui,sans-serif;font-weight:500;margin:10px 0 7px;color:#e8e0f3}
+.officer-card p{font:10px/1.6 ui-monospace,monospace;color:#8e819f;letter-spacing:.05em;margin:0}
+@media(max-width:1150px){body[data-view=officers] #copy{position:relative;left:auto;top:auto;width:auto;margin:150px 6vw 30px}body[data-view=officers] #copy h1{font-size:52px;margin:15px 0}body[data-view=officers] #copy h1 br{display:none}body[data-view=officers] #officers-grid{margin:20px 6vw 90px;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 22px}.planet-viewport{height:210px}}
+@media(max-width:700px){body[data-view=officers] #copy{margin-top:145px}body[data-view=officers] #copy h1{font-size:42px}body[data-view=officers] #officers-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 16px}.planet-viewport{height:clamp(150px,40vw,220px)}.officer-card h2{font-size:16px}body[data-view=officers] footer{background:#030308e8;bottom:0;padding:12px 0}}
+body[data-view=officers]{display:flex;flex-direction:column;min-height:100vh}
+body[data-view=officers] #copy{order:1}
+body[data-view=officers] #officers-grid{order:2;margin-bottom:36px}
+body[data-view=officers] footer{order:3;position:relative;left:auto;right:auto;bottom:auto;margin:20px 4vw;padding:20px 0;background:none;gap:24px;flex-wrap:wrap}
+nav button{border-radius:0;min-width:110px;padding:12px 24px;white-space:nowrap}nav button:last-child{min-width:180px}
+@media(max-width:700px){nav{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}nav button,nav button:last-child{min-width:0;padding:11px 5px;font-size:10px;white-space:normal}}
+#event-navigation{display:none;gap:24px;margin-top:20px;pointer-events:auto;width:max-content}
+body[data-view=events] #event-navigation{display:flex}
+#event-navigation button{border:0;border-radius:0;background:none;padding:4px 8px;color:#b7a1de;font:32px/1.2 ui-monospace,monospace}
+#event-navigation button:hover{color:#fff}
+#event-navigation button:focus-visible{outline:1px solid #b7a1de;outline-offset:4px}
+#project-carousel{display:none;position:fixed;inset:170px 0 26px;z-index:1}
+body[data-view=projects] #project-carousel{display:flex;flex-direction:column;justify-content:center}
+body[data-view=projects] #copy,body[data-view=projects] #details{display:none}
+.project-track{display:flex;align-items:center;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:24px 13vw;scrollbar-width:none;overscroll-behavior-x:contain;min-height:0}
+.project-track::-webkit-scrollbar{display:none}
+.project-slide{flex:0 0 74vw;max-height:60vh;aspect-ratio:1.8;scroll-snap-align:center;position:relative;border-radius:10px;overflow:hidden;background:radial-gradient(ellipse at 75% 20%,color-mix(in srgb,var(--accent) 35%,#0a0714),#090811 65%);box-shadow:0 0 65px color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);transform:scale(.94);opacity:.55;transition:transform .5s,opacity .5s}
+.project-slide.is-current{transform:scale(1);opacity:1}
+.project-caption{position:absolute;left:6%;bottom:10%;z-index:1}.project-caption>span{font:11px monospace;letter-spacing:.15em;color:var(--accent)}.project-caption h2{font:clamp(32px,5vw,80px)/1.05 Redaction,serif;margin:20px 0}.project-caption p{font-size:13px;color:#aaa2b9}
+.project-art{position:absolute;inset:0 0 0 35%;display:grid;place-items:center;color:var(--accent)}.project-art>span{font:clamp(100px,24vw,380px) Redaction,serif;opacity:.15}.project-orbit{position:absolute;width:65%;aspect-ratio:1;border:1px solid var(--accent);border-radius:50%;transform:rotate(-30deg) scaleX(.6);box-shadow:0 0 60px color-mix(in srgb,var(--accent) 20%,transparent)}.project-orbit:after{content:'';position:absolute;inset:-12%;border:1px solid var(--accent);border-radius:50%;transform:rotate(65deg) scaleX(.7)}
+.project-controls{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:24px}.project-controls button{border:0;background:none;font:26px monospace;border-radius:0;color:#ddd}.project-controls output{font:14px monospace;letter-spacing:.15em;color:#a9a0b6}
+@media(max-width:700px){#project-carousel{top:150px}.project-slide{aspect-ratio:.9;max-height:65vh}.project-caption h2{font-size:38px}.project-caption p{max-width:190px;line-height:1.6}.project-track{gap:16px}}
+@media(prefers-reduced-motion:reduce){.project-slide{transition:none}}
+.project-slide:not(.is-current){cursor:pointer}
+#main-jellyfish-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:0;opacity:0;transition:opacity .5s}
+body[data-view=main] #main-jellyfish-video{opacity:1}
+body[data-view=main]:not(.live-jellyfish)>canvas{opacity:0;pointer-events:none}
+</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head><body>
+<header><a href="#main">TRITONXR</a><nav aria-label="Destinations"><button data-view="main" aria-current="page">Main</button><button data-view="officers">Officers</button><button data-view="events">Events</button><button data-view="projects">Project Collection</button></nav></header>
+
+<section id="home" aria-label="TritonXR home">
+<h1>TritonXR</h1>
+<div class="home-caption"><span>UC San Diego's extended reality community</span><span>Build worlds. Break boundaries.</span></div>
+<section class="upcoming" aria-labelledby="upcoming-title">
+<div class="event-placeholder" aria-label="Upcoming event poster placeholder"><span class="placeholder-mark" aria-hidden="true">XR</span><span class="placeholder-note">Next transmission / poster coming soon</span></div>
+<div class="upcoming-copy"><div class="label">Coming into view / Upcoming event</div><h2 id="upcoming-title">Next event<br>to be announced.</h2><p>Our next event will appear here. In the meantime, explore the workshops, game nights, and builds from our community.</p><div class="event-meta"><span>Date<strong>To be announced</strong></span><span>Location<strong>To be announced</strong></span></div><button id="browse-events">Explore past events ↗</button></div>
+</section>
+<section class="upcoming reversed" aria-labelledby="upcoming-title-2">
+<div class="event-placeholder" aria-label="Upcoming event poster placeholder"><span class="placeholder-mark" aria-hidden="true">XR</span><span class="placeholder-note">Transmission 02 / poster coming soon</span></div>
+<div class="upcoming-copy"><div class="label">Coming into view / Upcoming event 02</div><h2 id="upcoming-title-2">Next event<br>to be announced.</h2><p>Our next event will appear here. In the meantime, explore the workshops, game nights, and builds from our community.</p><div class="event-meta"><span>Date<strong>To be announced</strong></span><span>Location<strong>To be announced</strong></span></div><button class="browse-events">Explore past events ↗</button></div>
+</section>
+<section class="upcoming" aria-labelledby="upcoming-title-3">
+<div class="event-placeholder" aria-label="Upcoming event poster placeholder"><span class="placeholder-mark" aria-hidden="true">XR</span><span class="placeholder-note">Transmission 03 / poster coming soon</span></div>
+<div class="upcoming-copy"><div class="label">Coming into view / Upcoming event 03</div><h2 id="upcoming-title-3">Next event<br>to be announced.</h2><p>Our next event will appear here. In the meantime, explore the workshops, game nights, and builds from our community.</p><div class="event-meta"><span>Date<strong>To be announced</strong></span><span>Location<strong>To be announced</strong></span></div><button class="browse-events">Explore past events ↗</button></div>
+</section>
+</section>
+<div id="loading">Entering the space…</div><main id="copy"><div class="label" id="label">01 / UC San Diego</div><h1 id="title">Reality,<br>reassembled.</h1><p id="description">A collective of students exploring what happens beyond the screen.</p><div id="event-navigation" aria-label="Rotate event posters"><button id="event-back" aria-label="Previous posters">&lt;</button><button id="event-forward" aria-label="Next posters">&gt;</button></div></main><div id="details"></div>
+<section id="project-carousel" aria-label="Project collection">
+<div class="project-track" tabindex="0" aria-label="Project slides">
+<article class="project-slide" style="--accent:#9973ed"><div class="project-art"><div class="project-orbit"></div><span>01</span></div><div class="project-caption"><span>PROJECT COLLECTION / 01</span><h2>Worlds waiting<br>to be built.</h2><p>Student project showcase · Coming soon</p></div></article>
+<article class="project-slide" style="--accent:#e17dab"><div class="project-art"><div class="project-orbit"></div><span>02</span></div><div class="project-caption"><span>PROJECT COLLECTION / 02</span><h2>Beyond<br>the screen.</h2><p>Student project showcase · Coming soon</p></div></article>
+<article class="project-slide" style="--accent:#71b6e7"><div class="project-art"><div class="project-orbit"></div><span>03</span></div><div class="project-caption"><span>PROJECT COLLECTION / 03</span><h2>A new<br>perspective.</h2><p>Student project showcase · Coming soon</p></div></article>
+</div><div class="project-controls"><button id="project-back" aria-label="Previous project">&lt;</button><output id="project-count" aria-live="polite">01 / 03</output><button id="project-next" aria-label="Next project">&gt;</button></div>
+</section>
+<section id="officers-grid" aria-label="Officer planets"></section>
+
+<dialog id="poster-dialog" aria-label="Event poster"><header><span id="poster-caption"></span><button id="close-poster">Close ×</button></header><img id="poster-image" alt=""></dialog>
+<script type="module" src="./spatial.js?v=33"></script></body></html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Glass jellyfish preview</title>
+<style>body{margin:0;background:#111216;color:#eee;font:14px system-ui}canvas{display:block}nav{position:fixed;top:20px;left:20px;display:flex;flex-wrap:wrap;gap:8px;z-index:1;right:20px}button,a{font:inherit;color:#eee;background:#25262d;border:1px solid #555;border-radius:6px;padding:9px 14px;text-decoration:none;cursor:pointer}button[aria-pressed="true"]{border-color:#c9aeff;background:#40324d}#error{position:fixed;bottom:20px;left:20px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head>
+<body><nav><button id="front">Front</button><button id="inside">Side</button><button data-color="blue">Blue</button><button data-color="orange">Orange</button><button data-color="pink">Pink</button><a id="download" href="./assets/models/glass-jellyfish.glb" download>Download GLB</a></nav><p id="error"></p>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#030811');
+const pmrem=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();scene.environment=pmrem.fromScene(room).texture;room.dispose();pmrem.dispose();
+const camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.001,10);camera.position.set(2,.5,3.5);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,-.55,0);controls.enableDamping=true;controls.minDistance=1.2;controls.maxDistance=8;
+const key=new THREE.DirectionalLight(0xffffff,2);key.position.set(1,2,3);scene.add(key);scene.add(new THREE.HemisphereLight(0xffffff,0x343746,1));
+let model,request=0;
+const loader=new GLTFLoader();
+function disposeModel(object){object.traverse(child=>{if(child.isMesh){child.geometry.dispose();const materials=Array.isArray(child.material)?child.material:[child.material];materials.forEach(material=>material.dispose());}});}
+function setColor(color){
+ const token=++request;
+ const path=`./assets/models/glass-jellyfish${color==='blue'?'':'-'+color}.glb`;
+ loader.load(path+'?v=2',gltf=>{
+  if(token!==request){disposeModel(gltf.scene);return;}
+  if(model){scene.remove(model);disposeModel(model);}
+  model=gltf.scene;scene.add(model);
+  document.getElementById('download').href=path;
+  document.querySelectorAll('[data-color]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.color===color)));
+  document.getElementById('error').textContent='';
+ },undefined,error=>{if(token===request)document.getElementById('error').textContent='Could not load model: '+error.message;});
+}
+document.querySelectorAll('[data-color]').forEach(button=>button.onclick=()=>setColor(button.dataset.color));
+setColor('blue');
+document.getElementById('front').onclick=()=>camera.position.set(0,-.3,4);
+document.getElementById('inside').onclick=()=>camera.position.set(4,-.3,0);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+</script></body></html>
