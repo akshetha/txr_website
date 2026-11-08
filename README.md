@@ -2,15 +2,16 @@
 
 **Check it out live:** https://akshetha.github.io/txr_website/
 
-This is my sandbox for TritonXR's website --> new fonts, new styles, and cool asthetics. Not the real site.
+This is my sandbox for TritonXR's website
 
-All the visuals were made by me in Canva.
+## What's on here
 
-## What's on the page
-
-- Why TritonXR exists
-- What you get out of joining (skills, hands-on stuff, cool projects, VR immersion)
-- A scroll through past events like hackathons, game nights, Unity workshops, Obsidian Q&A, and more
+- Different versions of my process
+- main: latest version - video headset intro -> spatial Main (with video instead on glb)
+- mixed: headset -> main (but index.html opens up previously created blue version of the website)
+- initial_attempt: backup of original design
+- implementation: minimal hand-control test: camera pointer, pinch clicking, pinch scrolling, and test box.
+- mix: used to mix components of branches together before pushing to main
 
 ---
 2026 Akshetha Vishnu
